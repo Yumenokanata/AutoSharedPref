@@ -1,6 +1,24 @@
 # AutoSharedPref
 android的SharedPreferences的代理Model生成工具
 
+## 添加到Android studio
+Step1: 在根build.gradle中添加仓库：
+```groovy
+allprojects {
+	repositories {
+        jcenter()
+		maven { url "https://jitpack.io" }
+	}
+}
+```
+
+Step2: 在工程中添加依赖：
+```groovy
+dependencies {
+    compile 'com.github.Yumenokanata:AutoSharedPref:1.2.0'
+}
+```
+
 ## 使用方法
 1. 定义一个POJO：
 ```java
