@@ -136,7 +136,6 @@ public class ReflectUtil {
             else
                 method = ownerClass.getMethod(toGetter(fieldname));
         } catch (NoSuchMethodException e){
-            e.printStackTrace();
             return null;
         }
 
