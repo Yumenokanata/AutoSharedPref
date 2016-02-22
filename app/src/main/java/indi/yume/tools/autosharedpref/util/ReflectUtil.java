@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class ReflectUtil {
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
 
-        Field[] fields = targetClazz.getDeclaredFields();
+        Field[] fields = getDeclaredFields(targetClazz);
 
         for (Field f : fields)
             if(f.getAnnotation(Ignore.class) == null) {
@@ -47,7 +48,7 @@ public class ReflectUtil {
     }
 
     public static List<String> getFiledName(Class<?> clazz){
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = getDeclaredFields(clazz);
         List<String> list = new ArrayList<>();
 
         for (Field f : fields)
@@ -60,7 +61,7 @@ public class ReflectUtil {
     public static Map<String, FieldEntity> getFiled(Class<?> clazz)
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = getDeclaredFields(clazz);
         Map<String, FieldEntity> map = new HashMap<>();
 
         for (Field f : fields)
@@ -93,7 +94,7 @@ public class ReflectUtil {
     }
 
     public static Field getFiledNameByMethod(Class clazz, Method method){
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = getDeclaredFields(clazz);
         Field field = null;
         for(Field f : fields)
             if(f.getAnnotation(Ignore.class) == null)
@@ -107,7 +108,7 @@ public class ReflectUtil {
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         Class clazz = object.getClass();
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = getDeclaredFields(clazz);
         Map<String, FieldEntity> map = new HashMap<>();
 
         for (Field f : fields)
@@ -157,6 +158,16 @@ public class ReflectUtil {
                 } catch (IllegalArgumentException e){
                     e.printStackTrace();
                 }
+    }
+
+    private static Field[] getDeclaredFields(Class<?> clazz) {
+        List<Field> list = new ArrayList<>();
+        while (clazz != Object.class) {
+            Collections.addAll(list, clazz.getDeclaredFields());
+            clazz = clazz.getSuperclass();
+        }
+
+        return list.toArray(new Field[list.size()]);
     }
 
     private static Class getGenericType(Field f){
