@@ -15,7 +15,7 @@ allprojects {
 Step2: 在工程中添加依赖：
 ```groovy
 dependencies {
-    compile 'com.github.Yumenokanata:AutoSharedPref:1.9'
+    compile 'com.github.Yumenokanata:AutoSharedPref:1.9.1'
 }
 ```
 
