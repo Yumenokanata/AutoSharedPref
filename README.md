@@ -15,7 +15,7 @@ allprojects {
 Step2: 在工程中添加依赖：
 ```groovy
 dependencies {
-    compile 'com.github.Yumenokanata:AutoSharedPref:1.5'
+    compile 'com.github.Yumenokanata:AutoSharedPref:1.9'
 }
 ```
 
@@ -50,7 +50,7 @@ public class SharedPrefModel {
 
 注：本工具是通过反射setter和getter方法对属性值进行获取的，所以私有属性、setter、getter三者缺一不可
 
-2.生成代理类
+2. 生成代理类
 ```java
 TestModel model = AutoSharedPref.newModel(context, TestModel.class, "sharedPrefFileName")
 ```
@@ -61,6 +61,10 @@ TestModel model = AutoSharedPref.newModel(context, TestModel.class, "sharedPrefF
 
 注：因此setter与getter方法中的代码会被执行
 
+3. 可选择是否开启缓存（可提高一倍的性能，但目前还处于测试阶段，可能会有未知的Bug）
+```java
+AutoSharedPref.setUseCache(true);
+```
 
 ###License
 <pre>
