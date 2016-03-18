@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/Yumenokanata/AutoSharedPref.svg)](https://jitpack.io/#Yumenokanata/AutoSharedPref)
+
 # AutoSharedPref
 android的SharedPreferences的代理Model生成工具
 
