@@ -73,7 +73,7 @@ public class ToStringUtil {
                 for(int i = 0; i < jsonArray.length(); i++)
                     set.add(gson.fromJson(jsonArray.getString(i), genericType));
             } catch (JSONException e) {
-                e.printStackTrace();
+                LogUtil.e(e);
             }
             return set;
         }
@@ -92,7 +92,7 @@ public class ToStringUtil {
                         m.put(k, gson.fromJson(s, genericType));
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    LogUtil.e(e);
                 }
                 return m;
             }
@@ -108,7 +108,7 @@ public class ToStringUtil {
                     list.add(gson.fromJson(jo.getString(i), genericType));
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                LogUtil.e(e);
             }
             return list;
         }
@@ -214,7 +214,7 @@ public class ToStringUtil {
                                 jo.put(MAP_KEY, key);
                                 jo.put(MAP_VALUE, map.get(key));
                             } catch (JSONException e) {
-                                e.printStackTrace();
+                                LogUtil.e(e);
                                 continue;
                             }
                             jsonArray.put(jo);
@@ -234,7 +234,7 @@ public class ToStringUtil {
                                 map.put(jo.getString(MAP_KEY), jo.optString(MAP_VALUE));
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            LogUtil.e(e);
                         }
                         return map;
                     }

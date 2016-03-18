@@ -1,5 +1,7 @@
 package indi.yume.tools.autosharedpref.util;
 
+import android.text.TextUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,6 +10,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,13 +22,11 @@ import indi.yume.tools.autosharedpref.model.FieldEntity;
  * Created by yume on 15/8/25.
  */
 public class ReflectUtil {
-    public static Object setFiledAndValue(Map<String, Object> map, Class<?> clazz)
+    public static <T> T setFiledAndValue(Map<String, Object> map, Class<T> clazz)
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
 
-        Object object = setFiledAndValue(map, clazz.newInstance(), clazz);
-
-        return object;
+        return setFiledAndValue(map, clazz.newInstance(), clazz);
     }
 
     public static <T> T setFiledAndValue(Map<String, Object> map, T object, Class targetClazz)
@@ -40,7 +41,7 @@ public class ReflectUtil {
                     if(map.containsKey(f.getName()))
                         setObjectValue(object, targetClazz, f.getName(), map.get(f.getName()));
                 }catch (NullPointerException e){
-                    e.printStackTrace();
+                    LogUtil.e(e);
                 }
             }
 
@@ -96,10 +97,15 @@ public class ReflectUtil {
     public static Field getFiledNameByMethod(Class clazz, Method method){
         Field[] fields = getDeclaredFields(clazz);
         Field field = null;
-        for(Field f : fields)
-            if(f.getAnnotation(Ignore.class) == null)
-                if(toSetter(f.getName()).equals(method.getName()))
-                    field = f;
+        fieldFor: for(Field f : fields)
+            if(f.getAnnotation(Ignore.class) == null) {
+                List<String> nameList = toSetter(f.getName());
+                for(String name : nameList)
+                    if(name.equals(method.getName())) {
+                        field = f;
+                        break fieldFor;
+                    }
+            }
 
         return field;
     }
@@ -130,18 +136,30 @@ public class ReflectUtil {
             IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         Class ownerClass = owner.getClass();
 
-        Method method = null;
-        try {
-            if (type == boolean.class)
-                method = ownerClass.getMethod(toIs(fieldname));
-            else
-                method = ownerClass.getMethod(toGetter(fieldname));
-        } catch (NoSuchMethodException e){
-            return null;
-        }
+        List<String> nameList = null;
+        if(type == boolean.class)
+            nameList = toIs(fieldname);
+        if(nameList == null)
+            nameList = new LinkedList<>();
+        nameList.addAll(toGetter(fieldname));
 
         Object object = null;
-        object = method.invoke(owner);
+        for(String getterName : nameList) {
+            LogUtil.m(fieldname + "| getterName: " + getterName);
+            try {
+                Method method = ownerClass.getMethod(getterName);
+                object = method.invoke(owner);
+                break;
+            } catch (NoSuchMethodException e) {
+                continue;
+            } catch (IllegalAccessException e) {
+                continue;
+            } catch (IllegalArgumentException e) {
+                continue;
+            } catch (InvocationTargetException e) {
+                break;
+            }
+        }
 
         return object;
     }
@@ -149,15 +167,18 @@ public class ReflectUtil {
     public static void setObjectValue(Object owner, Class targetClazz, String fieldname, Object value)
             throws SecurityException, NoSuchMethodException,
             IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        Method[] method = null;
-        method = targetClazz.getMethods();
-        for(Method m : method)
-            if(m.getName().equals(toSetter(fieldname)))
-                try {
-                    m.invoke(owner, value);
-                } catch (IllegalArgumentException e){
-                    e.printStackTrace();
-                }
+        Method[] methodList = targetClazz.getMethods();
+
+        List<String> nameList = toSetter(fieldname);
+        method: for(Method m : methodList)
+            for(String name : nameList)
+                if(m.getName().equals(name))
+                    try {
+                        m.invoke(owner, value);
+                        break method;
+                    } catch (IllegalArgumentException e){
+                        LogUtil.e(e);
+                    }
     }
 
     private static Field[] getDeclaredFields(Class<?> clazz) {
@@ -190,67 +211,69 @@ public class ReflectUtil {
         return null;
     }
 
-    public static String toGetter(String fieldname) {
+    public static List<String> toGetter(String fieldname) {
         if (fieldname == null || fieldname.length() == 0) {
             return null;
         }
 
-    /* If the second char is upper, make 'get' + field name as getter name. For example, eBlog -> geteBlog */
+        List<String> nameList = new LinkedList<>();
+        /* If the second char is upper, make 'get' + field name as getter name. For example, eBlog -> geteBlog */
         if (fieldname.length() > 1) {
-            String second = fieldname.substring(1, 2);
-            if (second.equals(second.toUpperCase())) {
-                return new StringBuffer("get").append(fieldname).toString();
+            char second = fieldname.charAt(1);
+            if (Character.isUpperCase(second)) {
+                nameList.add("get" + fieldname);
             }
         }
 
-    /* Common situation */
-        fieldname = new StringBuffer("get").append(fieldname.substring(0, 1).toUpperCase())
-                .append(fieldname.substring(1)).toString();
+        fieldname = "get" + fieldname.substring(0, 1).toUpperCase() + fieldname.substring(1);
+        nameList.add(fieldname);
 
-        return  fieldname;
+        return nameList;
     }
 
-    public static String toIs(String fieldname) {
+    public static List<String> toIs(String fieldname) {
         if (fieldname == null || fieldname.length() == 0) {
             return null;
         }
 
+        List<String> nameList = new LinkedList<>();
         if(fieldname.startsWith("is") || fieldname.startsWith("iS") || fieldname.startsWith("IS"))
-            return fieldname;
+            nameList.add(fieldname);
         if(fieldname.startsWith("Is"))
-            return new StringBuffer("i").append(fieldname.substring(1)).toString();
+            nameList.add("i" + fieldname.substring(1));
 
         if (fieldname.length() > 1) {
-            String second = fieldname.substring(1, 2);
-            if (second.equals(second.toUpperCase())) {
-                return new StringBuffer("is").append(fieldname).toString();
+            char second = fieldname.charAt(1);
+            if (Character.isUpperCase(second)) {
+                nameList.add("is" + fieldname);
             }
         }
 
-    /* Common situation */
-        fieldname = new StringBuffer("is").append(fieldname.substring(0, 1).toUpperCase())
-                .append(fieldname.substring(1)).toString();
+        /* Common situation */
+        fieldname = "is" + fieldname.substring(0, 1).toUpperCase() + fieldname.substring(1);
+        nameList.add(fieldname);
 
-        return  fieldname;
+        return nameList;
     }
 
-    public static String toSetter(String fieldname) {
+    public static List<String> toSetter(String fieldname) {
         if (fieldname == null || fieldname.length() == 0) {
             return null;
         }
 
-    /* If the second char is upper, make 'set' + field name as getter name. For example, eBlog -> seteBlog */
+        List<String> nameList = new LinkedList<>();
+        /* If the second char is upper, make 'set' + field name as getter name. For example, eBlog -> seteBlog */
         if (fieldname.length() > 2) {
-            String second = fieldname.substring(1, 2);
-            if (second.equals(second.toUpperCase())) {
-                return new StringBuffer("set").append(fieldname).toString();
+            char second = fieldname.charAt(1);
+            if (Character.isUpperCase(second)) {
+                nameList.add("set" + fieldname);
             }
         }
 
-    /* Common situation */
-        fieldname = new StringBuffer("set").append(fieldname.substring(0, 1).toUpperCase())
-                .append(fieldname.substring(1)).toString();
+        /* Common situation */
+        fieldname = "set" + fieldname.substring(0, 1).toUpperCase() + fieldname.substring(1);
+        nameList.add(fieldname);
 
-        return  fieldname;
+        return nameList;
     }
 }

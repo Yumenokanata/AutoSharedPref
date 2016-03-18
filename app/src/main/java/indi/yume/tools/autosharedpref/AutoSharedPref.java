@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import indi.yume.tools.autosharedpref.model.FieldEntity;
+import indi.yume.tools.autosharedpref.util.LogUtil;
 import indi.yume.tools.autosharedpref.util.ReflectUtil;
 import indi.yume.tools.autosharedpref.util.SharedPrefUtil;
 import indi.yume.tools.autosharedpref.util.ToStringUtil;
@@ -67,11 +68,11 @@ public class AutoSharedPref implements InvocationHandler {
                         ToStringUtil.objectToCanSaveObject(fieldEntity, fieldEntity.getValue()));
             }
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            LogUtil.e(e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LogUtil.e(e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            LogUtil.e(e);
         }
     }
 
@@ -96,5 +97,9 @@ public class AutoSharedPref implements InvocationHandler {
                     ToStringUtil.objectToCanSaveObject(fieldEntity, fieldEntity.getValue()));
         }
         return result;
+    }
+
+    public static void setLog(boolean open) {
+        LogUtil.setDebug(open);
     }
 }
