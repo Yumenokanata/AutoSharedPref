@@ -1,10 +1,12 @@
 package indi.yume.tools.autosharedpref.util;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,16 +24,11 @@ import indi.yume.tools.autosharedpref.model.FieldEntity;
  * Created by yume on 15/8/25.
  */
 public class ReflectUtil {
-    public static <T> T setFiledAndValue(Map<String, Object> map, Class<T> clazz)
-            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, InstantiationException {
-
+    public static <T> T setFiledAndValue(Map<String, Object> map, Class<T> clazz) throws IllegalAccessException, InstantiationException {
         return setFiledAndValue(map, clazz.newInstance(), clazz);
     }
 
-    public static <T> T setFiledAndValue(Map<String, Object> map, T object, Class targetClazz)
-            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T> T setFiledAndValue(Map<String, Object> map, T object, Class targetClazz) {
 
         Field[] fields = getDeclaredFields(targetClazz);
 
@@ -59,9 +56,7 @@ public class ReflectUtil {
         return list;
     }
 
-    public static Map<String, FieldEntity> getFiled(Class<?> clazz)
-            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
+    public static Map<String, FieldEntity> getFiled(Class<?> clazz) {
         Field[] fields = getDeclaredFields(clazz);
         Map<String, FieldEntity> map = new HashMap<>();
 
@@ -77,9 +72,7 @@ public class ReflectUtil {
         return map;
     }
 
-    public static FieldEntity getOneFiledAndValueByMethod(Object object, Method method)
-            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
+    public static FieldEntity getOneFiledAndValueByMethod(Object object, Method method) {
 //        Class clazz = object.getClass();
         Class clazz = method.getDeclaringClass();
         Field field = getFiledNameByMethod(clazz, method);
@@ -110,9 +103,7 @@ public class ReflectUtil {
         return field;
     }
 
-    public static Map<String, FieldEntity> getFiledAndValue(Object object)
-            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
+    public static Map<String, FieldEntity> getFiledAndValue(Object object) {
         Class clazz = object.getClass();
         Field[] fields = getDeclaredFields(clazz);
         Map<String, FieldEntity> map = new HashMap<>();
@@ -131,9 +122,7 @@ public class ReflectUtil {
         return map;
     }
 
-    public static Object getObjectValue(Class type, Object owner, String fieldname)
-            throws SecurityException,
-            IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public static Object getObjectValue(Class type, Object owner, String fieldname) {
         Class ownerClass = owner.getClass();
 
         List<String> nameList = null;
@@ -164,9 +153,7 @@ public class ReflectUtil {
         return object;
     }
 
-    public static void setObjectValue(Object owner, Class targetClazz, String fieldname, Object value)
-            throws SecurityException, NoSuchMethodException,
-            IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public static void setObjectValue(Object owner, Class targetClazz, String fieldname, Object value) {
         Method[] methodList = targetClazz.getMethods();
 
         List<String> nameList = toSetter(fieldname);
@@ -178,7 +165,47 @@ public class ReflectUtil {
                         break method;
                     } catch (IllegalArgumentException e){
                         LogUtil.e(e);
+                    } catch (IllegalAccessException e) {
+                        LogUtil.e(e);
+                    } catch (InvocationTargetException e) {
+                        LogUtil.e(e);
                     }
+    }
+
+    @Nullable
+    public static Method getSetterMethod(Class clazz, String fieldname) {
+        Method[] methodList = clazz.getMethods();
+
+        List<String> nameList = toSetter(fieldname);
+        for(Method m : methodList)
+            for(String name : nameList)
+                if(m.getName().equals(name) && m.getTypeParameters().length == 1)
+                    if(!Modifier.isStatic(m.getModifiers()))
+                        return m;
+
+        return null;
+    }
+
+    @Nullable
+    public static Method getGetterMethod(Class clazz, String fieldName, Class fieldClazz) {
+        List<String> nameList = null;
+        if(fieldClazz == boolean.class)
+            nameList = toIs(fieldName);
+        if(nameList == null)
+            nameList = new LinkedList<>();
+        nameList.addAll(toGetter(fieldName));
+
+        Object object = null;
+        for(String getterName : nameList) {
+            LogUtil.m(fieldName + "| getterName: " + getterName);
+            try {
+                return clazz.getMethod(getterName);
+            } catch (NoSuchMethodException e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 
     private static Field[] getDeclaredFields(Class<?> clazz) {
@@ -191,7 +218,7 @@ public class ReflectUtil {
         return list.toArray(new Field[list.size()]);
     }
 
-    private static Class getGenericType(Field f){
+    static Class getGenericType(Field f){
         if(f.getType().isAssignableFrom(List.class) ||
                 f.getType().isAssignableFrom(Set.class)) {
             Type fc = f.getGenericType();
