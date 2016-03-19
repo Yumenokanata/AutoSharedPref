@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/Yumenokanata/AutoSharedPref.svg)](https://jitpack.io/#Yumenokanata/AutoSharedPref)
+
 # AutoSharedPref
 android的SharedPreferences的代理Model生成工具
 
@@ -15,7 +17,7 @@ allprojects {
 Step2: 在工程中添加依赖：
 ```groovy
 dependencies {
-    compile 'com.github.Yumenokanata:AutoSharedPref:1.9'
+    compile 'com.github.Yumenokanata:AutoSharedPref:1.9.1'
 }
 ```
 
