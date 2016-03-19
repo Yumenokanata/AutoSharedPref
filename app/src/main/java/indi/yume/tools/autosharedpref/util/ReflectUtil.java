@@ -218,7 +218,7 @@ public class ReflectUtil {
         return list.toArray(new Field[list.size()]);
     }
 
-    static Class getGenericType(Field f){
+    public static Class getGenericType(Field f){
         if(f.getType().isAssignableFrom(List.class) ||
                 f.getType().isAssignableFrom(Set.class)) {
             Type fc = f.getGenericType();

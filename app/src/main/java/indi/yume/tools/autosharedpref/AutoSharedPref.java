@@ -2,13 +2,8 @@ package indi.yume.tools.autosharedpref;
 
 import android.content.Context;
 
-import com.google.dexmaker.dx.rop.code.Exceptions;
 import com.google.dexmaker.stock.ProxyBuilder;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 

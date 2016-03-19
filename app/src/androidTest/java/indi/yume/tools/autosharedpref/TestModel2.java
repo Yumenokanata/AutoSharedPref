@@ -1,14 +1,9 @@
-package indi.yume.demo.test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package indi.yume.tools.autosharedpref;
 
 /**
  * Created by yume on 16/3/18.
  */
-public class TestModel {
+public class TestModel2 {
     private String fName = "fName";
     private String f_name = "f_name";
     private String name = "name";
@@ -17,18 +12,6 @@ public class TestModel {
     private boolean isMan = false;
     private Boolean isWomen = true;
     private Boolean men = false;
-    private Map<String, String> map = new HashMap<String, String>() {
-        {
-            for(int i = 0; i < 400; i++)
-                put("key" + i, "value1" + i);
-        }
-    };
-    private List<String> list = new ArrayList<String>() {
-        {
-            for(int i = 0; i < 400; i++)
-                add("listItem" + i);
-        }
-    };
 
     public String getF_name() {
         return f_name;
@@ -100,21 +83,5 @@ public class TestModel {
 
     public void setSex(boolean sex) {
         this.sex = sex;
-    }
-
-    public Map<String, String> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<String, String> map) {
-        this.map = map;
-    }
-
-    public List<String> getList() {
-        return list;
-    }
-
-    public void setList(List<String> list) {
-        this.list = list;
     }
 }

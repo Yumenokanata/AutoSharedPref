@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import indi.yume.tools.autosharedpref.model.Action1;
 import indi.yume.tools.autosharedpref.model.FieldEntity;
 
 /**
@@ -23,6 +26,7 @@ import indi.yume.tools.autosharedpref.model.FieldEntity;
 public class ToStringUtil {
     private static final String MAP_KEY = "key";
     private static final String MAP_VALUE = "value";
+    private static final Gson gson = new Gson();
 
     private static Map<Class<?>, Convertor<?>> mConvertorMap;
 
@@ -69,7 +73,6 @@ public class ToStringUtil {
             try {
                 JSONArray jsonArray = new JSONArray((String) value);
                 set = new HashSet<>();
-                Gson gson = new Gson();
                 for(int i = 0; i < jsonArray.length(); i++)
                     set.add(gson.fromJson(jsonArray.getString(i), genericType));
             } catch (JSONException e) {
@@ -84,7 +87,6 @@ public class ToStringUtil {
                 try {
                     JSONObject jo = new JSONObject((String) value);
                     m = new HashMap<>();
-                    Gson gson = new Gson();
                     Iterator<String> keys = jo.keys();
                     while (keys.hasNext()) {
                         String k = keys.next();
@@ -103,7 +105,6 @@ public class ToStringUtil {
             try {
                 list = new ArrayList<>();
                 JSONArray jo = new JSONArray((String) value);
-                Gson gson = new Gson();
                 for(int i = 0; i < jo.length(); i++){
                     list.add(gson.fromJson(jo.getString(i), genericType));
                 }
@@ -117,7 +118,6 @@ public class ToStringUtil {
             if(fieldType == c)
                 return convertorMap.get(c).string2Object((String) value);
 
-        Gson gson = new Gson();
         return gson.fromJson((String) value, fieldType);
     }
 
@@ -142,18 +142,15 @@ public class ToStringUtil {
                 return value;
             }
 
-            Gson gson = new Gson();
             return gson.toJson(value);
         }
         if(clazz == Map.class){
             Class genericType = valueType.getGenericType();
             if(genericType != String.class) {
-                Gson gson = new Gson();
                 return gson.toJson(value);
             }
         }
         if(clazz == List.class){
-            Gson gson = new Gson();
             return gson.toJson(value);
         }
 
@@ -161,7 +158,6 @@ public class ToStringUtil {
             if(clazz == c)
                 return convertorMap.get(c).object2String(value);
 
-        Gson gson = new Gson();
         return gson.toJson(value);
     }
 
@@ -199,6 +195,21 @@ public class ToStringUtil {
     }
 
     private static void addMapConvertor(){
+        class MapAction implements Action1<JsonUtil.JsonBuilder> {
+            String key;
+            String value;
+            public void set(String key, String value) {
+                this.key = key;
+                this.value = value;
+            }
+
+            @Override
+            public void call(JsonUtil.JsonBuilder builder) {
+                builder.add(MAP_KEY, key)
+                        .add(MAP_VALUE, value);
+            }
+        }
+        final MapAction action1 = new MapAction();
         addConvertor(Map.class,
                 new Convertor<Map>() {
                     @Override
@@ -207,19 +218,25 @@ public class ToStringUtil {
 
                         if(map == null || map.size() == 0)
                             return "";
-                        JSONArray jsonArray = new JSONArray();
-                        for(String key : map.keySet()){
-                            JSONObject jo = new JSONObject();
-                            try {
-                                jo.put(MAP_KEY, key);
-                                jo.put(MAP_VALUE, map.get(key));
-                            } catch (JSONException e) {
-                                LogUtil.e(e);
-                                continue;
-                            }
-                            jsonArray.put(jo);
+                        JsonUtil.JsonArrayBuilder arrayBuilder = JsonUtil.startArray();
+                        for(final Map.Entry<String, String> entry : map.entrySet()) {
+                            action1.set(entry.getKey(), entry.getValue());
+                            arrayBuilder.addJson(action1);
                         }
-                        return jsonArray.toString();
+                        return arrayBuilder.end();
+//                        JSONArray jsonArray = new JSONArray();
+//                        for(String key : map.keySet()){
+//                            JSONObject jo = new JSONObject();
+//                            try {
+//                                jo.put(MAP_KEY, key);
+//                                jo.put(MAP_VALUE, map.get(key));
+//                            } catch (JSONException e) {
+//                                LogUtil.e(e);
+//                                continue;
+//                            }
+//                            jsonArray.put(jo);
+//                        }
+//                        return jsonArray.toString();
                     }
 
                     @Override
