@@ -283,7 +283,7 @@ public class ReflectUtil {
         return nameList;
     }
 
-    public static List<String> toSetter(String fieldname) {
+    public static List<String> toSetter(final String fieldname) {
         if (fieldname == null || fieldname.length() == 0) {
             return null;
         }
@@ -298,8 +298,10 @@ public class ReflectUtil {
         }
 
         /* Common situation */
-        fieldname = "set" + fieldname.substring(0, 1).toUpperCase() + fieldname.substring(1);
-        nameList.add(fieldname);
+        nameList.add("set" + fieldname.substring(0, 1).toUpperCase() + fieldname.substring(1));
+
+        if(fieldname.startsWith("is"))
+            nameList.add(fieldname.replace("is", "set"));
 
         return nameList;
     }
