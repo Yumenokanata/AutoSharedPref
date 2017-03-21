@@ -1,5 +1,7 @@
 package indi.yume.tools.autosharedpref.util;
 
+import android.util.Base64;
+
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -8,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +58,26 @@ public class ToStringUtil {
         for(FieldEntity fe : map.keySet())
             newMap.put(fe, canSaveObjectToOriObject(fe, map.get(fe)));
         return newMap;
+    }
+
+    public static String encodeBase64(String rawText) {
+        return new String(Base64.decode(rawText, Base64.DEFAULT));
+    }
+
+    public static String decryptBase64(String base64) {
+        return Base64.encodeToString(base64.getBytes(), Base64.DEFAULT);
+    }
+
+    public static String toJson(Object object) {
+        return gson.toJson(object);
+    }
+
+    public static <T> T fromJson(String json, Class<T> classOfT) {
+        return gson.fromJson(json, classOfT);
+    }
+
+    public static <T> T fromJson(String json, Type typeOfT) {
+        return gson.fromJson(json, typeOfT);
     }
 
     public static Object canSaveObjectToOriObject(FieldEntity valueType, Object value){

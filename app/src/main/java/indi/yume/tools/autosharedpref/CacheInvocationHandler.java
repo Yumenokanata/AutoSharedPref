@@ -3,15 +3,13 @@ package indi.yume.tools.autosharedpref;
 import android.content.Context;
 
 import com.google.dexmaker.stock.ProxyBuilder;
-import com.google.gson.Gson;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import indi.yume.tools.autosharedpref.model.FieldEntity;
+import indi.yume.tools.autosharedpref.sharedpref.SharedPrefImpl;
+import indi.yume.tools.autosharedpref.sharedpref.SharedPrefService;
 import indi.yume.tools.autosharedpref.util.ReflectCacheUtil;
-import indi.yume.tools.autosharedpref.util.ReflectUtil;
-import indi.yume.tools.autosharedpref.util.SharedPrefUtil;
 import indi.yume.tools.autosharedpref.util.ToStringUtil;
 
 /**
@@ -20,11 +18,13 @@ import indi.yume.tools.autosharedpref.util.ToStringUtil;
 public class CacheInvocationHandler implements ProxyInvocationHandler {
     private boolean isCreate = true;
     private Context mContext;
-    private String PREF_FILE_NAME;
+    private String fileName;
+    private SharedPrefService prefService;
 
-    public CacheInvocationHandler(Context mContext, String PREF_FILE_NAME) {
+    public CacheInvocationHandler(Context mContext, String fileName, SharedPrefService prefService) {
         this.mContext = mContext;
-        this.PREF_FILE_NAME = PREF_FILE_NAME;
+        this.fileName = fileName;
+        this.prefService = prefService;
     }
 
     @Override
@@ -43,8 +43,8 @@ public class CacheInvocationHandler implements ProxyInvocationHandler {
             if(fieldEntity == null)
                 return result;
 
-            SharedPrefUtil.putValue(mContext,
-                    PREF_FILE_NAME,
+            prefService.putValue(mContext,
+                    fileName,
                     fieldEntity.getFieldName(),
                     ToStringUtil.objectToCanSaveObject(fieldEntity, fieldEntity.getValue()));
         }

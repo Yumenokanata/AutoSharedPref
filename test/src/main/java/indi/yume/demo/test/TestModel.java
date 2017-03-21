@@ -12,7 +12,7 @@ public class TestModel {
     private String fName = "fName";
     private String f_name = "f_name";
     private String name = "name";
-    private String LName = "Name";
+    private String LName = "<name>";
     private boolean sex = true;
     private boolean isMan = false;
     private Boolean isWomen = true;
