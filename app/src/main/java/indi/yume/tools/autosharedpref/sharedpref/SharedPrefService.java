@@ -2,7 +2,6 @@ package indi.yume.tools.autosharedpref.sharedpref;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 
 import java.util.Map;
 

@@ -1,8 +1,5 @@
 package indi.yume.tools.autosharedpref.util;
 
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -172,7 +169,6 @@ public class ReflectUtil {
                     }
     }
 
-    @Nullable
     public static Method getSetterMethod(Class clazz, String fieldname) {
         Method[] methodList = clazz.getMethods();
 
@@ -186,7 +182,6 @@ public class ReflectUtil {
         return null;
     }
 
-    @Nullable
     public static Method getGetterMethod(Class clazz, String fieldName, Class fieldClazz) {
         List<String> nameList = null;
         if(fieldClazz == boolean.class)
